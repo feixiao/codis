@@ -3,6 +3,7 @@
 
 package models
 
+// Proxy需要注册的信息
 type Proxy struct {
 	Id        int    `json:"id,omitempty"`
 	Token     string `json:"token"`

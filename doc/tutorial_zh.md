@@ -93,7 +93,7 @@ Codis 源代码需要下载到 `$GOPATH/src/github.com/feixiao/codis`：
 
 ```bash
 $ mkdir -p $GOPATH/src/github.com/feixiao
-$ cd $_ && git clone https://github.com/feixiao/codis.git -b release3.2
+$ cd $_ && git clone https://github.com/feixiao/codis.git
 ```
 
 #### 4. 编译 Codis 源代码

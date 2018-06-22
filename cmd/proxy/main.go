@@ -184,6 +184,7 @@ Options:
 		log.Warnf("option --session_auth = %s", s)
 	}
 
+	// 创建Proxy实例
 	s, err := proxy.New(config)
 	if err != nil {
 		log.PanicErrorf(err, "create proxy with config file failed\n%s", config)
@@ -216,6 +217,8 @@ Options:
 		log.Warnf("[%p] proxy receive signal = '%v'", s, sig)
 	}()
 
+
+	// 服务上线操作，下面的只会执行一次
 	switch {
 	case dashboard != "":
 		go AutoOnlineWithDashboard(s, dashboard)

@@ -73,13 +73,13 @@ func New(config *Config) (*Proxy, error) {
 		StartTime: time.Now().String(),
 	}
 	s.model.ProductName = config.ProductName
-	s.model.DataCenter = config.ProxyDataCenter
-	s.model.Pid = os.Getpid()
-	s.model.Pwd, _ = os.Getwd()
+	s.model.DataCenter = config.ProxyDataCenter  // 数据中心 ?
+	s.model.Pid = os.Getpid()	 // 进程号
+	s.model.Pwd, _ = os.Getwd()  // 返回当前工作目录
 	if b, err := exec.Command("uname", "-a").Output(); err != nil {
 		log.WarnErrorf(err, "run command uname failed")
 	} else {
-		s.model.Sys = strings.TrimSpace(string(b))
+		s.model.Sys = strings.TrimSpace(string(b))  // 系统信息
 	}
 	s.model.Hostname = utils.Hostname
 
