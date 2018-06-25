@@ -11,6 +11,7 @@ import (
 )
 
 func jsonEncode(v interface{}) []byte {
+	// MarshalIndent函数的功能和 Marshal一致，只是格式化 json，方便人工阅读。
 	b, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
 		log.PanicErrorf(err, "encode to json failed")

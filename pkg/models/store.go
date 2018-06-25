@@ -26,14 +26,17 @@ func JodisPath(product string, token string) string {
 
 const CodisDir = "/codis3"
 
+// 获取产品路径
 func ProductDir(product string) string {
 	return filepath.Join(CodisDir, product)
 }
 
+// 获取加锁路径
 func LockPath(product string) string {
 	return filepath.Join(CodisDir, product, "topom")
 }
 
+// 获取Redis的Slot路径
 func SlotPath(product string, sid int) string {
 	return filepath.Join(CodisDir, product, "slots", fmt.Sprintf("slot-%04d", sid))
 }
@@ -71,7 +74,7 @@ func LoadTopom(client Client, product string, must bool) (*Topom, error) {
 }
 
 type Store struct {
-	client  Client
+	client  Client      // zk、etcd等操作接口
 	product string
 }
 

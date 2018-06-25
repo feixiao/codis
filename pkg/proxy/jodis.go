@@ -18,7 +18,7 @@ var ErrClosedJodis = errors.New("use of closed jodis")
 type Jodis struct {
 	mu sync.Mutex
 
-	path string
+	path string				// 分布式应用程序协调服务路径
 	data []byte
 
 	client models.Client

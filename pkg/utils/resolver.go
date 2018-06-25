@@ -99,6 +99,7 @@ func replaceUnspecifiedIP(network string, address string, replace bool) (string,
 	case "unix", "unixpacket":
 		return address, nil
 	case "tcp", "tcp4", "tcp6":
+		// 使用net.ResolveTCPAddr()方法，定义一个TCPAddr结构，做为本机监听地址。
 		tcpAddr, err := net.ResolveTCPAddr(network, address)
 		if err != nil {
 			return "", errors.Trace(err)

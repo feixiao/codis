@@ -431,6 +431,7 @@ func (s *Topom) serveAdmin() {
 	eh := make(chan error, 1)
 	go func(l net.Listener) {
 		h := http.NewServeMux()
+		// dashboard提供的HTTP服务
 		h.Handle("/", newApiServer(s))
 		hs := &http.Server{Handler: h}
 		eh <- hs.Serve(l)
