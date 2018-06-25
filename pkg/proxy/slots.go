@@ -9,6 +9,7 @@ import (
 	"github.com/feixiao/codis/pkg/models"
 )
 
+// Redis槽结构
 type Slot struct {
 	id   int
 	lock struct {

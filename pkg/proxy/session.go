@@ -113,6 +113,7 @@ var RespOK = redis.NewString([]byte("OK"))
 
 func (s *Session) Start(d *Router) {
 	s.start.Do(func() {
+		//  控制连接客户端数量
 		if int(incrSessions()) > s.config.ProxyMaxClients {
 			go func() {
 				s.Conn.Encode(redis.NewErrorf("ERR max number of clients reached"), true)
@@ -174,6 +175,7 @@ func (s *Session) loopReader(tasks *RequestChan, d *Router) (err error) {
 		s.LastOpUnix = start.Unix()
 		s.Ops++
 
+		// 构建请求对象
 		r := &Request{}
 		r.Multi = multi
 		r.Batch = &sync.WaitGroup{}
@@ -182,11 +184,13 @@ func (s *Session) loopReader(tasks *RequestChan, d *Router) (err error) {
 
 		if err := s.handleRequest(r, d); err != nil {
 			r.Resp = redis.NewErrorf("ERR handle request, %s", err)
+			// 处理失败就加入到tasks中
 			tasks.PushBack(r)
 			if breakOnFailure {
 				return err
 			}
 		} else {
+			// 处理成功就加入到tasks中
 			tasks.PushBack(r)
 		}
 	}
@@ -211,6 +215,7 @@ func (s *Session) loopWriter(tasks *RequestChan) (err error) {
 	p.MaxInterval = time.Millisecond
 	p.MaxBuffered = maxPipelineLen / 2
 
+	// 获取第一个请求并处理
 	return tasks.PopFrontAll(func(r *Request) error {
 		resp, err := s.handleResponse(r)
 		if err != nil {
@@ -236,6 +241,7 @@ func (s *Session) loopWriter(tasks *RequestChan) (err error) {
 	})
 }
 
+// 处理请求并返回回复
 func (s *Session) handleResponse(r *Request) (*redis.Resp, error) {
 	r.Batch.Wait()
 	if r.Coalesce != nil {
@@ -251,7 +257,9 @@ func (s *Session) handleResponse(r *Request) (*redis.Resp, error) {
 	return r.Resp, nil
 }
 
+// 处理请求
 func (s *Session) handleRequest(r *Request, d *Router) error {
+	// 解析操作
 	opstr, flag, err := getOpInfo(r.Multi)
 	if err != nil {
 		return err
