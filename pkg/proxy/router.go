@@ -19,7 +19,7 @@ type Router struct {
 	mu sync.RWMutex
 
 	pool struct {
-		primary *sharedBackendConnPool
+		primary *sharedBackendConnPool 
 		replica *sharedBackendConnPool
 	}
 	slots [MaxSlotNum]Slot
