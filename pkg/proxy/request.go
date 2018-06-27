@@ -11,6 +11,7 @@ import (
 	"github.com/feixiao/codis/pkg/utils/sync2/atomic2"
 )
 
+// Redis请求定义
 type Request struct {
 	Multi []*redis.Resp
 	Batch *sync.WaitGroup

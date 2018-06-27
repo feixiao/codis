@@ -369,13 +369,13 @@ func (bc *BackendConn) loopWriter(round int) (err error) {
 
 type sharedBackendConn struct {
 	addr string
-	host []byte
-	port []byte
+	host []byte						// 地址
+	port []byte						// 端口
 
-	owner *sharedBackendConnPool
+	owner *sharedBackendConnPool  	// 所属连接池
 	conns [][]*BackendConn
 
-	single []*BackendConn
+	single []*BackendConn			// 单个连接
 
 	refcnt int
 }
@@ -490,7 +490,7 @@ type sharedBackendConnPool struct {
 	config   *Config
 	parallel int
 
-	pool map[string]*sharedBackendConn
+	pool map[string]*sharedBackendConn  // key为addr
 }
 
 func newSharedBackendConnPool(config *Config, parallel int) *sharedBackendConnPool {
