@@ -36,17 +36,18 @@ Options:
 	--log-level=LEVEL           set the log-level, should be INFO,WARN,DEBUG or ERROR, default is INFO.
 `
 
+	// 解析命令行参数
 	d, err := docopt.Parse(usage, nil, true, "", false)
 	if err != nil {
 		log.PanicError(err, "parse arguments failed")
 	}
 
 	switch {
-
+	// 查看默认配置
 	case d["--default-config"]:
 		fmt.Println(topom.DefaultConfig)
 		return
-
+	// 查看版本号
 	case d["--version"].(bool):
 		fmt.Println("version:", utils.Version)
 		fmt.Println("compile:", utils.Compile)
@@ -54,6 +55,7 @@ Options:
 
 	}
 
+	// 日志输出基础路径  --log 后跟日志的基础路径
 	if s, ok := utils.Argument(d, "--log"); ok {
 		w, err := log.NewRollingFile(s, log.DailyRolling)
 		if err != nil {
@@ -64,30 +66,35 @@ Options:
 	}
 	log.SetLevel(log.LevelInfo)
 
+	// 日志输出级别
 	if s, ok := utils.Argument(d, "--log-level"); ok {
 		if !log.SetLevelString(s) {
 			log.Panicf("option --log-level = %s", s)
 		}
 	}
 
+	// 程序使用cpu数量
 	if n, ok := utils.ArgumentInteger(d, "--ncpu"); ok {
 		runtime.GOMAXPROCS(n)
 	} else {
-		runtime.GOMAXPROCS(runtime.NumCPU())
+		runtime.GOMAXPROCS(runtime.NumCPU()) // 默认情况
 	}
 	log.Warnf("set ncpu = %d", runtime.GOMAXPROCS(0))
 
-	config := topom.NewDefaultConfig()
+	config := topom.NewDefaultConfig() // 默认情况
+	// 加载程序配置(如果指定配置文件的话)
 	if s, ok := utils.Argument(d, "--config"); ok {
 		if err := config.LoadFromFile(s); err != nil {
 			log.PanicErrorf(err, "load config %s failed", s)
 		}
 	}
+	//  HostAdmin 配置
 	if s, ok := utils.Argument(d, "--host-admin"); ok {
 		config.HostAdmin = s
 		log.Warnf("option --host-admin = %s", s)
 	}
 
+	// zk/etcd选择
 	switch {
 	case d["--zookeeper"] != nil:
 		config.CoordinatorName = "zookeeper"
@@ -106,6 +113,7 @@ Options:
 
 	}
 
+	// 产品名称和产品认证设置
 	if s, ok := utils.Argument(d, "--product_name"); ok {
 		config.ProductName = s
 		log.Warnf("option --product_name = %s", s)
@@ -133,6 +141,7 @@ Options:
 		}
 	}
 
+	// 主服务
 	s, err := topom.New(client, config)
 	if err != nil {
 		log.PanicErrorf(err, "create topom with config file failed\n%s", config)
@@ -141,6 +150,7 @@ Options:
 
 	log.Warnf("create topom with config\n%s", config)
 
+	// pid file
 	if s, ok := utils.Argument(d, "--pidfile"); ok {
 		if pidfile, err := filepath.Abs(s); err != nil {
 			log.WarnErrorf(err, "parse pidfile = '%s' failed", s)
@@ -165,6 +175,7 @@ Options:
 		log.Warnf("[%p] dashboard receive signal = '%v'", s, sig)
 	}()
 
+	// 等待退出
 	for i := 0; !s.IsClosed() && !s.IsOnline(); i++ {
 		if err := s.Start(true); err != nil {
 			if i <= 15 {

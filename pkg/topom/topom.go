@@ -80,37 +80,43 @@ type Topom struct {
 var ErrClosedTopom = errors.New("use of closed topom")
 
 func New(client models.Client, config *Config) (*Topom, error) {
+	// 校验配置文件
 	if err := config.Validate(); err != nil {
 		return nil, errors.Trace(err)
 	}
+	// 验证产品名字
 	if err := models.ValidateProduct(config.ProductName); err != nil {
 		return nil, errors.Trace(err)
 	}
 	s := &Topom{}
 	s.config = config
 	s.exit.C = make(chan struct{})
+	// Redis Sentinel provides high availability for Redis
 	s.action.redisp = redis.NewPool(config.ProductAuth, config.MigrationTimeout.Duration())
 	s.action.progress.status.Store("")
 
 	s.ha.redisp = redis.NewPool("", time.Second*5)
-
 	s.model = &models.Topom{
 		StartTime: time.Now().String(),
 	}
 	s.model.ProductName = config.ProductName
 	s.model.Pid = os.Getpid()
 	s.model.Pwd, _ = os.Getwd()
+	// 获取机器名字
 	if b, err := exec.Command("uname", "-a").Output(); err != nil {
 		log.WarnErrorf(err, "run command uname failed")
 	} else {
 		s.model.Sys = strings.TrimSpace(string(b))
 	}
+
+	// 创建Store实例
 	s.store = models.NewStore(client, config.ProductName)
 
 	s.stats.redisp = redis.NewPool(config.ProductAuth, time.Second*5)
 	s.stats.servers = make(map[string]*RedisStats)
 	s.stats.proxies = make(map[string]*ProxyStats)
 
+	// 监听服务  config.AdminAddr
 	if err := s.setup(config); err != nil {
 		s.Close()
 		return nil, err
@@ -118,6 +124,7 @@ func New(client models.Client, config *Config) (*Topom, error) {
 
 	log.Warnf("create new topom:\n%s", s.model.Encode())
 
+	// http服务
 	go s.serveAdmin()
 
 	return s, nil
@@ -127,8 +134,8 @@ func (s *Topom) setup(config *Config) error {
 	if l, err := net.Listen("tcp", config.AdminAddr); err != nil {
 		return errors.Trace(err)
 	} else {
+		// 监听成功
 		s.ladmin = l
-
 		x, err := utils.ReplaceUnspecifiedIP("tcp", l.Addr().String(), s.config.HostAdmin)
 		if err != nil {
 			return err
